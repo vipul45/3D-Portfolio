@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vipul Kumar Jha - 3D Portfolio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #00aaff;
+            --secondary-color: #ffffff;
+            --background-color: #0d1117;
+            --card-bg-color: rgba(22, 27, 34, 0.85);
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-secondary-color: #8b949e;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+            z-index: -1;
+        }
+
+        #content-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(10px);
+            background: rgba(13, 17, 23, 0.5);
+        }
+
+        #content-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 90%;
+            width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transform: scale(0.95);
+            transition: transform 0.5s ease;
+        }
+
+        #content-overlay.visible .card {
+            transform: scale(1);
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .card::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card::-webkit-scrollbar-track {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        .card::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+        }
+
+
+        #close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        #close-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+            color: var(--primary-color);
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .card p, .card li {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .card h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .card li {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .skill-category {
+            margin-bottom: 1rem;
+        }
+        
+        .skill-category strong {
+            color: var(--primary-color);
+        }
+
+        .project {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .project:last-child {
+            border-bottom: none;
+        }
+        
+        .project-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .contact-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            transition: color 0.3s;
+        }
+        
+        .contact-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        .experience-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .experience-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .experience-item h4 {
+            color: var(--secondary-color);
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+        }
+
+        .experience-item .experience-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary-color);
+            margin: 0 0 0.75rem 0;
+        }
+
+        #intro-text {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+            visibility: visible;
+            transition: opacity 0.5s ease, visibility 0s;
+        }
+        #intro-text h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(0, 170, 255, 0.7);
+        }
+        #intro-text p {
+            font-size: 1.2rem;
+            margin: 10px 0 0;
+            color: var(--text-secondary-color);
+        }
+        #intro-text.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0s 0.5s;
+        }
+
+        @media (max-width: 768px) {
+            #intro-text {
+                top: 10%;
+            }
+            #intro-text h1 {
+                font-size: 2rem;
+            }
+            #intro-text p {
+                font-size: 1rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            .card-title {
+                font-size: 1.5rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="intro-text">
+        <h1>Vipul Kumar Jha</h1>
+        <p>Blockchain & Full Stack Developer</p>
+        <p style="font-size: 0.9rem; margin-top: 20px;">Click and drag to explore. Click on objects to learn more.</p>
+    </div>
+
+    <div id="content-overlay">
+        <div class="card">
+            <h2 id="card-title" class="card-title"></h2>
+            <div id="card-content"></div>
+        </div>
+        <button id="close-btn">&times;</button>
+    </div>
+
+    <!-- Scripts for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
+
+    <script type="module">
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00aaff, 1, 100);
+        pointLight.position.set(0, 0, 10);
+        scene.add(pointLight);
+
+        // Orbit Controls for user interaction
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enablePan = false;
+        controls.enableZoom = false; // Zoom is handled by camera movement on click
+        controls.minPolarAngle = Math.PI / 4;
+        controls.maxPolarAngle = 3 * Math.PI / 4;
+        
+        camera.position.z = 20;
+
+        // Data from the portfolio
+        const portfolioData = {
+            "About Me": `
+                <p>Over 3 years of experience as a Blockchain-focused Software Engineer, building scalable backend systems, APIs, and innovative Web3 applications. Passionate about DeFi, crypto-economic protocols, and interoperability.</p>
+                <h3>Key Achievements:</h3>
+                <ul>
+                    <li>Delivered systems with 40% improvement in data processing.</li>
+                    <li>Maintained 99.9% uptime for critical services.</li>
+                    <li>Achieved 1M+ TPS in blockchain proof-of-concepts.</li>
+                </ul>
+            `,
+            "Technical Skills": `
+                <div class="skill-category">
+                    <strong>Languages & Frameworks:</strong>
+                    <p>Python, Java, JavaScript, TypeScript, Node.js, Express, React</p>
+                </div>
+                <div class="skill-category">
+                    <strong>Blockchain:</strong>
+                    <p>Solidity, Hardhat, Ethers.js, Web3.js, Ethereum APIs, Post-Quantum Security</p>
+                </div>
+                <div class="skill-category">
+                    <strong>Databases & Practices:</strong>
+                    <p>MongoDB, PostgreSQL, SQL, RESTful APIs, Git, Agile</p>
+                </div>
+            `,
+            "Projects": `
+                <div class="project">
+                    <p class="project-title">AI-Powered Analytics Dashboard</p>
+                    <p>SaaS platform with 10,000+ daily API requests, role-based authentication, and 50% reduction in manual reporting.</p>
+                </div>
+                <div class="project">
+                    <p class="project-title">DeFi Yield Aggregator</p>
+                    <p>Smart contract-based DeFi protocol for optimal yield allocation across various lending platforms.</p>
+                </div>
+                <div class="project">
+                    <p class="project-title">Quantum-Safe Crypto Wallet</p>
+                    <p>A post-quantum secure crypto wallet proof-of-concept using the Dilithium signature scheme.</p>
+                </div>
+                <div class="project">
+                    <p class="project-title">DMAIL Decentralized Messaging</p>
+                    <p>Decentralized, private messaging system using blockchain for identity and routing; piloted with 200+ users.</p>
+                </div>
+            `,
+            "Experience": `
+                <div class="experience-item">
+                    <h4>Software Developer | Web3 Banking</h4>
+                    <p class="experience-meta">November 2024 – Present | Faridabad</p>
+                    <ul>
+                        <li>Built backend systems for a blockchain payments platform using Node.js & Express, supporting 5,000+ daily active users.</li>
+                        <li>Developed APIs for invoice summary automation, reducing reporting time by 60%.</li>
+                        <li>Ensured 99.9% production uptime during UAT with quick bug resolutions.</li>
+                        <li>Conducted 3+ PoCs for blockchain integrations, enhancing adoption and scalability.</li>
+                        <li>Managed customer integrations that enabled 20% faster onboarding of enterprise clients.</li>
+                    </ul>
+                </div>
+                <div class="experience-item">
+                    <h4>Software Developer | AI Dashboard (SaaS + Web3 PoCs)</h4>
+                    <p class="experience-meta">August 2023 – November 2024 | Faridabad</p>
+                    <ul>
+                        <li>Designed SaaS platform in Python handling 10k+ API requests/day with secure role-based authentication.</li>
+                        <li>Integrated AI-driven analytics, reducing manual reporting effort by 50%.</li>
+                        <li>Built PoCs in Post-Quantum Cryptography, ML personalization, and Babylon.js visualizations, tested by 3 enterprise clients.</li>
+                        <li>Developed real-time dashboards, improving data clarity by 35% (via client feedback).</li>
+                    </ul>
+                </div>
+                <div class="experience-item">
+                    <h4>Software Developer | Blockchain Ecosystem</h4>
+                    <p class="experience-meta">January 2022 – July 2023 | Faridabad</p>
+                    <ul>
+                        <li>Engineered blockchain prototypes with throughput up to 1M TPS, ensuring scalability benchmarks.</li>
+                        <li>Built decentralized solutions for identity (DPI) and messaging (DMAIL), piloted by 200+ beta users.</li>
+                        <li>Implemented privacy-focused protocols, increasing compliance by 30%.</li>
+                        <li>Researched post-quantum cryptography integrations, improving security testing coverage by 25%.</li>
+                    </ul>
+                </div>
+            `,
+            "Education & Certs": `
+                <h3>Education:</h3>
+                <ul>
+                    <li>MBA, Technology & Business Strategy - Manipal University (2025 - Present)</li>
+                    <li>B.Tech, Computer Science (AI & ML) - YMCA University (2020 - 2024)</li>
+                </ul>
+                <h3>Certifications:</h3>
+                <ul>
+                    <li>Java Development (Anudip Foundation)</li>
+                    <li>AI Fundamentals (Oracle)</li>
+                    <li>Blockchain Mastery (Coursera)</li>
+                    <li>Blockchain Fundamentals (101 Blockchains)</li>
+                </ul>
+            `,
+            "Contact": `
+                <p>Actively seeking new opportunities. Feel free to reach out for questions or networking.</p>
+                <div class="contact-links">
+                    <p><strong>Email:</strong> <a href="mailto:jhavipul12@outlook.com">jhavipul12@outlook.com</a></p>
+                    <p><strong>GitHub:</strong> <a href="https://github.com" target="_blank">View My Work</a></p>
+                </div>
+            `,
+        };
+
+        // Create interactive 3D objects
+        const objects = [];
+        const textLabels = [];
+        const textureLoader = new THREE.TextureLoader();
+        const fontLoader = new THREE.FontLoader();
+
+        fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+            const sections = Object.keys(portfolioData);
+            const numObjects = sections.length;
+            const radius = 8;
+
+            sections.forEach((title, i) => {
+                const angle = (i / numObjects) * Math.PI * 2;
+                const x = radius * Math.cos(angle);
+                const y = 0;
+                const z = radius * Math.sin(angle);
+
+                const geometry = new THREE.BoxGeometry(2, 2, 2);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a1a,
+                    metalness: 0.7,
+                    roughness: 0.3,
+                    wireframe: true,
+                });
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(x, y, z);
+                mesh.userData = { title };
+                scene.add(mesh);
+                objects.push(mesh);
+
+                // Add text label
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textGeometry = new THREE.TextGeometry(title, {
+                    font: font,
+                    size: 0.3,
+                    height: 0.05,
+                });
+                textGeometry.center();
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(x, y-1.5, z);
+                scene.add(textMesh);
+                textLabels.push(textMesh);
+            });
+        });
+
+        // Background Particles
+        const particlesGeometry = new THREE.BufferGeometry;
+        const particlesCount = 5000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * (Math.random() * 50);
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.015, color: 0x00aaff });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        // Mouse interaction
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let INTERSECTED;
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+        
+        function onClick(event) {
+             raycaster.setFromCamera(mouse, camera);
+             const intersects = raycaster.intersectObjects(objects);
+
+             if(intersects.length > 0) {
+                const targetObject = intersects[0].object;
+                
+                // Animate camera to focus on the clicked object
+                const targetPosition = new THREE.Vector3();
+                targetObject.getWorldPosition(targetPosition);
+                
+                const cameraOffset = new THREE.Vector3(0, 0, 4); // how far from object
+                const newCameraPos = targetPosition.clone().add(cameraOffset);
+                
+                gsap.to(camera.position, {
+                    duration: 1.5,
+                    x: newCameraPos.x,
+                    y: newCameraPos.y,
+                    z: newCameraPos.z,
+                    ease: "power3.inOut",
+                    onUpdate: () => {
+                        camera.lookAt(targetPosition);
+                        controls.target.copy(targetPosition);
+                    },
+                    onComplete: () => {
+                        showOverlay(targetObject.userData.title);
+                    }
+                });
+
+                // Animate intro text out
+                document.getElementById('intro-text').classList.add('hidden');
+             }
+        }
+
+        // DOM elements
+        const overlay = document.getElementById('content-overlay');
+        const cardTitle = document.getElementById('card-title');
+        const cardContent = document.getElementById('card-content');
+        const closeBtn = document.getElementById('close-btn');
+
+        function showOverlay(title) {
+            cardTitle.innerText = title;
+            cardContent.innerHTML = portfolioData[title];
+            overlay.classList.add('visible');
+        }
+
+        function hideOverlay() {
+            overlay.classList.remove('visible');
+
+            // Animate camera back to original position
+            gsap.to(camera.position, {
+                duration: 1.5,
+                x: 0,
+                y: 0,
+                z: 20,
+                ease: "power3.inOut",
+                onUpdate: () => {
+                    controls.target.set(0, 0, 0);
+                    camera.lookAt(0,0,0);
+                }
+            });
+            // Animate intro text in
+            document.getElementById('intro-text').classList.remove('hidden');
+        }
+
+        closeBtn.addEventListener('click', hideOverlay);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onClick);
+
+
+        // Animation loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+
+            // Update particles
+            particlesMesh.rotation.y = elapsedTime * 0.05;
+            
+            // Update objects rotation
+            objects.forEach(obj => {
+                obj.rotation.x += 0.005;
+                obj.rotation.y += 0.005;
+            });
+
+            // Update text labels to face camera
+            textLabels.forEach(label => {
+                label.lookAt(camera.position);
+            });
+
+            // Update for mouseover effect
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                if (INTERSECTED != intersects[0].object) {
+                    if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                    INTERSECTED = intersects[0].object;
+                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                    INTERSECTED.material.emissive.setHex(0x00aaff);
+                }
+            } else {
+                if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                INTERSECTED = null;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+
+        animate();
+    </script>
+</body>
+</html>
+
